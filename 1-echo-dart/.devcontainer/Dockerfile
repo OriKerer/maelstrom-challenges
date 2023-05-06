@@ -1,5 +1,5 @@
 # Update VARIANT in devcontainer.json to pick a Dart version
-ARG VARIANT=2
+ARG VARIANT=3
 FROM dart:${VARIANT}
 
 # [Option] Install zsh
@@ -33,5 +33,5 @@ RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
     && apt-get -y install --no-install-recommends openjdk-17-jdk graphviz gnuplot bzip2
 
 # Install Maelstrom 
-RUN wget https://github.com/jepsen-io/maelstrom/releases/download/v0.2.3/maelstrom.tar.bz2 \
+RUN cd /tmp && wget https://github.com/jepsen-io/maelstrom/releases/download/v0.2.3/maelstrom.tar.bz2 \
     && tar -xvf maelstrom.tar.bz2

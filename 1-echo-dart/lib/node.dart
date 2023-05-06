@@ -1,9 +1,7 @@
 import 'dart:io';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:maelstrom_echo/handlers/handler_base.dart';
-import 'package:maelstrom_echo/message.dart';
 import 'dart:convert';
-import 'dart:mirrors';
 
 part 'node.g.dart';
 
@@ -12,32 +10,37 @@ class Node extends HandlerBase<MessageBodyInit, MessageBody> {
   late List<String> nodes;
   final Map<String, HandlerBase> handlers = {};
 
+  Node() {
+    handlers['init'] = this;
+  }
+
   void _init(String id, List<String> nodes) {
     this.id = id;
     this.nodes = nodes;
   }
 
-  void registerHandler(String messageType, HandlerBase hanlder) {
+  void registerHandler(String messageType, HandlerBase handler) {
     if (handlers.containsKey(messageType)) {
       throw ArgumentError.value(messageType,
           "An handler is already registered for this message type.");
     }
-    handlers[messageType] = hanlder;
+    handlers[messageType] = handler;
   }
 
   void run() {
     while (true) {
+      stderr.writeln("@@@@@ Started");
       var line = stdin.readLineSync();
       stderr.writeln("Request: '$line'");
-      var jsonMap = jsonDecode(line!) as Map<String, dynamic>;
-      var type = jsonMap['body']['type'];
-      var handler = handlers[type];
-      var request = reflectClass(handler!.requestType)
-          .invoke(Symbol("fromJson"), [jsonMap]);
-      var response = handler.handle(request as dynamic);
+      // '{"src": "1", "dest": "2", "body": {"type": "init", "node_id": "a", "node_ids" : ["a"], "msg_id": 2}}'
+      var requestJsonMap = jsonDecode(line!) as Map<String, dynamic>;
+      var type = requestJsonMap['body']['type'];
+      var handler = handlers[type]!;
+      var request = handler.fromJson(requestJsonMap['body']);
+      var response = handler.handle(request);
       var responseJson = jsonEncode({
-        'src': jsonMap['dest'],
-        'dest': jsonMap['src'],
+        'src': requestJsonMap['dest'],
+        'dest': requestJsonMap['src'],
         'body': response.toJson(),
       });
       stderr.writeln("Request: '$responseJson'");
@@ -50,6 +53,10 @@ class Node extends HandlerBase<MessageBodyInit, MessageBody> {
     _init(message.ownId, message.nodeIds);
     return MessageBody(inReplyTo: message.messageId!, type: 'init_ok');
   }
+
+  @override
+  MessageBodyInit Function(Map<String, dynamic> p1) get fromJson =>
+      MessageBodyInit.fromJson;
 }
 
 @JsonSerializable()
