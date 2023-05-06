@@ -14,29 +14,23 @@ class Node extends HandlerBase<MessageBodyInit, MessageBody> {
     handlers['init'] = this;
   }
 
-  void _init(String id, List<String> nodes) {
-    this.id = id;
-    this.nodes = nodes;
-  }
-
   void registerHandler(String messageType, HandlerBase handler) {
     if (handlers.containsKey(messageType)) {
       throw ArgumentError.value(messageType,
-          "An handler is already registered for this message type.");
+          "A handler is already registered for this message type.");
     }
     handlers[messageType] = handler;
   }
 
   void run() {
     while (true) {
-      stderr.writeln("@@@@@ Started");
       var line = stdin.readLineSync();
       stderr.writeln("Request: '$line'");
-      // '{"src": "1", "dest": "2", "body": {"type": "init", "node_id": "a", "node_ids" : ["a"], "msg_id": 2}}'
       var requestJsonMap = jsonDecode(line!) as Map<String, dynamic>;
       var type = requestJsonMap['body']['type'];
       var handler = handlers[type]!;
       var request = handler.fromJson(requestJsonMap['body']);
+
       var response = handler.handle(request);
       var responseJson = jsonEncode({
         'src': requestJsonMap['dest'],
@@ -50,8 +44,9 @@ class Node extends HandlerBase<MessageBodyInit, MessageBody> {
 
   @override
   MessageBody handle(MessageBodyInit message) {
-    _init(message.ownId, message.nodeIds);
-    return MessageBody(inReplyTo: message.messageId!, type: 'init_ok');
+    id = message.ownId;
+    nodes = message.nodeIds;
+    return MessageBody(inReplyTo: message.id!, type: 'init_ok');
   }
 
   @override
@@ -66,9 +61,8 @@ class MessageBodyInit extends MessageBody {
   @JsonKey(name: "node_ids")
   List<String> nodeIds;
 
-  MessageBodyInit(
-      {required this.ownId, required this.nodeIds, required int messageId})
-      : super(type: "init", messageId: messageId);
+  MessageBodyInit({required this.ownId, required this.nodeIds, required int id})
+      : super(type: "init", id: id);
   @override
   Map<String, dynamic> toJson() => _$MessageBodyInitToJson(this);
   factory MessageBodyInit.fromJson(Map<String, dynamic> json) =>

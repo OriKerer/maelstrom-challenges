@@ -17,10 +17,10 @@ class MessageHeader {
 class MessageBody {
   String type;
   @JsonKey(name: "msg_id")
-  int? messageId;
+  int? id;
   @JsonKey(name: "in_reply_to")
   int? inReplyTo;
-  MessageBody({required this.type, this.messageId, this.inReplyTo});
+  MessageBody({required this.type, this.id, this.inReplyTo});
   Map<String, dynamic> toJson() => _$MessageBodyToJson(this);
   factory MessageBody.fromJson(Map<String, dynamic> json) =>
       _$MessageBodyFromJson(json);
