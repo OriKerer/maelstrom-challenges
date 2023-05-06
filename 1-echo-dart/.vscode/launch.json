@@ -1,0 +1,10 @@
+{
+    "configurations": [
+        {
+            "name": "Dart",
+            "program": "/workspaces/1-echo-dart/bin/maelstrom_echo.dart",
+            "request": "launch",
+            "type": "dart"
+        }
+    ]
+}
