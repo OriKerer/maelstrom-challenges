@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'package:json_annotation/json_annotation.dart';
-import 'package:maelstrom_echo/handlers/handler_base.dart';
+import 'package:maelstrom_dart/handlers/handler_base.dart';
 import 'dart:convert';
 
 part 'node.g.dart';

@@ -1,7 +1,6 @@
-name: maelstrom_echo
-description: A sample command-line application.
+name: maelstrom_dart
 version: 1.0.0
-# repository: https://github.com/my_org/my_repo
+repository: https://github.com/orikerer/maelstrom-challenges
 
 environment:
   sdk: '>=2.19.6 <3.0.0'
