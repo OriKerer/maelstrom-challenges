@@ -1,1 +1,7 @@
-1-echo-go/
+# https://dart.dev/guides/libraries/private-files
+# Created by `dart pub`
+.dart_tool/
+*.g.dart
+
+# Maelstrom store
+store/
