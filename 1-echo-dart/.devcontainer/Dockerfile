@@ -29,8 +29,8 @@ RUN if ! cat /etc/group | grep -e "^pub-cache:" > /dev/null 2>&1; then groupadd 
     && chmod 755 "$DART_SDK" "$DART_SDK/bin"
 
 # [Optional] Uncomment this section to install additional OS packages.
-RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
-    && apt-get -y install --no-install-recommends openjdk-17-jdk graphviz gnuplot bzip2
+RUN apt update \
+    && apt install -y openjdk-17-jdk graphviz gnuplot bzip2
 
 # Install Maelstrom 
 RUN cd /tmp && wget https://github.com/jepsen-io/maelstrom/releases/download/v0.2.3/maelstrom.tar.bz2 \
