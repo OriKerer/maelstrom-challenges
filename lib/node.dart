@@ -1,9 +1,6 @@
 import 'dart:io';
-import 'package:json_annotation/json_annotation.dart';
 import 'package:maelstrom_dart/handlers/handler_base.dart';
 import 'dart:convert';
-
-part 'node.g.dart';
 
 class Node extends HandlerBase<MessageBodyInit, MessageBody> {
   late String id;
@@ -52,19 +49,4 @@ class Node extends HandlerBase<MessageBodyInit, MessageBody> {
   @override
   MessageBodyInit Function(Map<String, dynamic> p1) get fromJson =>
       MessageBodyInit.fromJson;
-}
-
-@JsonSerializable()
-class MessageBodyInit extends MessageBody {
-  @JsonKey(name: "node_id")
-  String ownId;
-  @JsonKey(name: "node_ids")
-  List<String> nodeIds;
-
-  MessageBodyInit({required this.ownId, required this.nodeIds, required int id})
-      : super(type: "init", id: id);
-  @override
-  Map<String, dynamic> toJson() => _$MessageBodyInitToJson(this);
-  factory MessageBodyInit.fromJson(Map<String, dynamic> json) =>
-      _$MessageBodyInitFromJson(json);
 }
