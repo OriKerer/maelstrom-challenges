@@ -1,3 +1,3 @@
 #!/bin/bash
-/tmp/mealstrom/mealstrom serve
+/tmp/maelstrom/maelstrom serve
 
