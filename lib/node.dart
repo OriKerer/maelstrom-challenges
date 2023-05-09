@@ -31,12 +31,12 @@ class Node extends HandlerBase<MessageBodyInit, MessageBody> {
   }
 
   MessageBody handleWrapper(Map<String, dynamic> msg) {
-    String type = msg['type'];
     Map<String, dynamic> body = msg['body'];
+    String type = body['type'] ?? '';
 
     if (!handlers.containsKey(type)) {
       return MessageBodyError(
-          error: MaelstromError.notSupported,
+          code: MaelstromErrorCode.notSupported,
           inReplyTo: body['msg_id'],
           text: 'Node does not support RPC type: $type');
     }
@@ -48,10 +48,10 @@ class Node extends HandlerBase<MessageBodyInit, MessageBody> {
       return handler.handle(request);
     } on MaelstromException catch (e) {
       return MessageBodyError(
-          error: e.code, inReplyTo: body['msg_id'], text: e.toString());
+          code: e.code, inReplyTo: body['msg_id'], text: e.toString());
     } catch (e) {
       return MessageBodyError(
-          error: MaelstromError.crash,
+          code: MaelstromErrorCode.crash,
           inReplyTo: body['msg_id'],
           text: e.toString());
     }

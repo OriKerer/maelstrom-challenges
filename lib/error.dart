@@ -1,22 +1,32 @@
-enum MaelstromError {
-  timeout(0),
-  nodeNotFound(1),
-  notSupported(10),
-  temporarilyUnavailable(11),
-  malformedRequest(12),
-  crash(13),
-  abort(14),
-  keyDoesNotExist(20),
-  keyAlreadyExist(21),
-  preconditionFailed(22),
-  txnConflict(30);
+import 'package:json_annotation/json_annotation.dart';
 
-  final int code;
-  const MaelstromError(this.code);
+enum MaelstromErrorCode {
+  @JsonValue(0)
+  timeout,
+  @JsonValue(1)
+  nodeNotFound,
+  @JsonValue(10)
+  notSupported,
+  @JsonValue(11)
+  temporarilyUnavailable,
+  @JsonValue(12)
+  malformedRequest,
+  @JsonValue(13)
+  crash,
+  @JsonValue(14)
+  abort,
+  @JsonValue(20)
+  keyDoesNotExist,
+  @JsonValue(21)
+  keyAlreadyExist,
+  @JsonValue(22)
+  preconditionFailed,
+  @JsonValue(30)
+  txnConflict;
 }
 
 class MaelstromException implements Exception {
-  final MaelstromError code;
+  final MaelstromErrorCode code;
   final String? description;
   MaelstromException({required this.code, this.description});
   @override

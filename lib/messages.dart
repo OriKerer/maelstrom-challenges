@@ -57,16 +57,12 @@ class MessageBodyEcho extends MessageBody {
 
 @JsonSerializable()
 class MessageBodyError extends MessageBody {
-  int code;
+  MaelstromErrorCode code;
   String text;
 
   MessageBodyError(
-      {required MaelstromError error,
-      this.text = "",
-      super.id,
-      super.inReplyTo})
-      : code = error.code,
-        super(type: 'error');
+      {required this.code, this.text = "", super.id, super.inReplyTo})
+      : super(type: 'error');
   @override
   Map<String, dynamic> toJson() => _$MessageBodyErrorToJson(this);
   factory MessageBodyError.fromJson(Map<String, dynamic> json) =>
