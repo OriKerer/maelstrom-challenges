@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:maelstrom_dart/handlers/handler_base.dart';
 import 'dart:convert';
+import 'package:maelstrom_dart/error.dart';
 
 class Node extends HandlerBase<MessageBodyInit, MessageBody> {
   late String id;
@@ -19,23 +20,51 @@ class Node extends HandlerBase<MessageBodyInit, MessageBody> {
     handlers[messageType] = handler;
   }
 
+  void send(String dest, MessageBody body) {
+    var fullJson = jsonEncode({
+      'src': id,
+      'dest': dest,
+      'body': body.toJson(),
+    });
+
+    stdout.writeln(fullJson);
+  }
+
+  MessageBody handleWrapper(Map<String, dynamic> msg) {
+    String type = msg['type'];
+    Map<String, dynamic> body = msg['body'];
+
+    if (!handlers.containsKey(type)) {
+      return MessageBodyError(
+          error: MaelstromError.notSupported,
+          inReplyTo: body['msg_id'],
+          text: 'Node does not support RPC type: $type');
+    }
+
+    var handler = handlers[type]!;
+
+    try {
+      var request = handler.fromJson(body);
+      return handler.handle(request);
+    } on MaelstromException catch (e) {
+      return MessageBodyError(
+          error: e.code, inReplyTo: body['msg_id'], text: e.toString());
+    } catch (e) {
+      return MessageBodyError(
+          error: MaelstromError.crash,
+          inReplyTo: body['msg_id'],
+          text: e.toString());
+    }
+  }
+
   void run() {
     while (true) {
       var line = stdin.readLineSync();
-      stderr.writeln("Request: '$line'");
       var requestJsonMap = jsonDecode(line!) as Map<String, dynamic>;
-      var type = requestJsonMap['body']['type'];
-      var handler = handlers[type]!;
-      var request = handler.fromJson(requestJsonMap['body']);
 
-      var response = handler.handle(request);
-      var responseJson = jsonEncode({
-        'src': requestJsonMap['dest'],
-        'dest': requestJsonMap['src'],
-        'body': response.toJson(),
-      });
-      stderr.writeln("Request: '$responseJson'");
-      stdout.writeln(responseJson);
+      var response = handleWrapper(requestJsonMap);
+
+      send(requestJsonMap['src'], response);
     }
   }
 

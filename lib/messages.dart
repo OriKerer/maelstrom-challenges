@@ -1,4 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
+import 'package:maelstrom_dart/error.dart';
 
 part 'messages.g.dart';
 
@@ -33,8 +34,9 @@ class MessageBodyInit extends MessageBody {
   @JsonKey(name: "node_ids")
   List<String> nodeIds;
 
-  MessageBodyInit({required this.ownId, required this.nodeIds, required int id})
-      : super(type: "init", id: id);
+  MessageBodyInit(
+      {required this.ownId, required this.nodeIds, required super.id})
+      : super(type: "init");
   @override
   Map<String, dynamic> toJson() => _$MessageBodyInitToJson(this);
   factory MessageBodyInit.fromJson(Map<String, dynamic> json) =>
@@ -45,10 +47,28 @@ class MessageBodyInit extends MessageBody {
 class MessageBodyEcho extends MessageBody {
   String echo;
 
-  MessageBodyEcho({required this.echo, int? id, int? inReplyTo, required type})
-      : super(type: type, id: id, inReplyTo: inReplyTo);
+  MessageBodyEcho({required this.echo, super.id, super.inReplyTo})
+      : super(type: 'echo');
   @override
   Map<String, dynamic> toJson() => _$MessageBodyEchoToJson(this);
   factory MessageBodyEcho.fromJson(Map<String, dynamic> json) =>
       _$MessageBodyEchoFromJson(json);
+}
+
+@JsonSerializable()
+class MessageBodyError extends MessageBody {
+  int code;
+  String text;
+
+  MessageBodyError(
+      {required MaelstromError error,
+      this.text = "",
+      super.id,
+      super.inReplyTo})
+      : code = error.code,
+        super(type: 'error');
+  @override
+  Map<String, dynamic> toJson() => _$MessageBodyErrorToJson(this);
+  factory MessageBodyError.fromJson(Map<String, dynamic> json) =>
+      _$MessageBodyErrorFromJson(json);
 }
