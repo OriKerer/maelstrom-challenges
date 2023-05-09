@@ -19,4 +19,6 @@ class MaelstromException implements Exception {
   final MaelstromError code;
   final String? description;
   MaelstromException({required this.code, this.description});
+  @override
+  String toString() => 'Code: $code, description: $description';
 }
