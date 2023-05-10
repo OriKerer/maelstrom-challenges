@@ -27,7 +27,7 @@ class MaelstromNode extends HandlerBase<MessageBodyInit, MessageBody> {
       'dest': dest,
       'body': body.toJson(),
     });
-    stderr.writeln('sent: $fullJson');
+    // stderr.writeln('sent: $fullJson');
     stdout.writeln(fullJson);
   }
 
@@ -61,7 +61,7 @@ class MaelstromNode extends HandlerBase<MessageBodyInit, MessageBody> {
   void run() {
     while (true) {
       var line = stdin.readLineSync();
-      stderr.writeln('received: $line');
+      // stderr.writeln('received: $line');
       var requestJsonMap = jsonDecode(line!) as Map<String, dynamic>;
       var context = RequestContext(
           this, _id, UnmodifiableListView(_nodes), requestJsonMap['src']);
