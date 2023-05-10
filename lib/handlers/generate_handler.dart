@@ -1,18 +1,13 @@
 import 'dart:math';
 
-import 'package:maelstrom_dart/node.dart';
-
 import './handler_base.dart';
 
 class GenerateHandler extends HandlerBase<MessageBody, MessageBodyGenerateOk> {
   int runningId = 0;
-  final Node node;
   final Random rand = Random();
 
-  GenerateHandler(this.node);
-
-  String generateUUID() {
-    var id = node.id.toString().substring(1); // node id index n1 -> 1
+  String generateUUID(String ownId) {
+    var id = ownId.toString().substring(1); // node id index n1 -> 1
     var t =
         DateTime.now().millisecondsSinceEpoch.toRadixString(36); // timestamp
     var r = rand.nextInt(pow(36, 4).toInt()).toRadixString(36); // random
@@ -20,9 +15,11 @@ class GenerateHandler extends HandlerBase<MessageBody, MessageBodyGenerateOk> {
   }
 
   @override
-  MessageBodyGenerateOk handle(MessageBody message) {
+  MessageBodyGenerateOk handle(RequestContext context, MessageBody message) {
     return MessageBodyGenerateOk(
-        id: message.id, inReplyTo: message.id, generatedId: generateUUID());
+        id: message.id,
+        inReplyTo: message.id,
+        generatedId: generateUUID(context.id));
   }
 
   @override
