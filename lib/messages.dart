@@ -68,3 +68,17 @@ class MessageBodyError extends MessageBody {
   factory MessageBodyError.fromJson(Map<String, dynamic> json) =>
       _$MessageBodyErrorFromJson(json);
 }
+
+@JsonSerializable()
+class MessageBodyGenerateOk extends MessageBody {
+  @JsonKey(name: "id")
+  String generatedId;
+
+  MessageBodyGenerateOk(
+      {required this.generatedId, required super.id, required super.inReplyTo})
+      : super(type: 'generate_ok');
+  @override
+  Map<String, dynamic> toJson() => _$MessageBodyGenerateOkToJson(this);
+  factory MessageBodyGenerateOk.fromJson(Map<String, dynamic> json) =>
+      _$MessageBodyGenerateOkFromJson(json);
+}

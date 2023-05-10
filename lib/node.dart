@@ -26,7 +26,7 @@ class Node extends HandlerBase<MessageBodyInit, MessageBody> {
       'dest': dest,
       'body': body.toJson(),
     });
-
+    stderr.writeln('sent: $fullJson');
     stdout.writeln(fullJson);
   }
 
@@ -46,20 +46,21 @@ class Node extends HandlerBase<MessageBodyInit, MessageBody> {
     try {
       var request = handler.fromJson(body);
       return handler.handle(request);
-    } on MaelstromException catch (e) {
+    } on MaelstromException catch (e, s) {
       return MessageBodyError(
-          code: e.code, inReplyTo: body['msg_id'], text: e.toString());
-    } catch (e) {
+          code: e.code, inReplyTo: body['msg_id'], text: '$e: $s');
+    } catch (e, s) {
       return MessageBodyError(
           code: MaelstromErrorCode.crash,
           inReplyTo: body['msg_id'],
-          text: e.toString());
+          text: '$e: $s');
     }
   }
 
   void run() {
     while (true) {
       var line = stdin.readLineSync();
+      stderr.writeln('received: $line');
       var requestJsonMap = jsonDecode(line!) as Map<String, dynamic>;
 
       var response = handleWrapper(requestJsonMap);
