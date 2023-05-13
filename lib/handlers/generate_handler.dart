@@ -1,8 +1,9 @@
 import 'dart:math';
 
-import './handler_base.dart';
+import 'rpc_handler_base.dart';
 
-class GenerateHandler extends HandlerBase<MessageBody, MessageBodyGenerateOk> {
+class GenerateHandler
+    extends RPCHandlerBase<MessageBody, MessageBodyGenerateOk> {
   int runningId = 0;
   final Random rand = Random();
 
@@ -15,7 +16,8 @@ class GenerateHandler extends HandlerBase<MessageBody, MessageBodyGenerateOk> {
   }
 
   @override
-  MessageBodyGenerateOk handle(RequestContext context, MessageBody message) {
+  Future<MessageBodyGenerateOk> handle(
+      RequestContext context, MessageBody message) async {
     return MessageBodyGenerateOk(
         id: message.id,
         inReplyTo: message.id,

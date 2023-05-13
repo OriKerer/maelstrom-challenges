@@ -1,24 +1,24 @@
 import 'dart:collection';
 import 'dart:io';
-import 'package:maelstrom_dart/handlers/handler_base.dart';
+import 'package:maelstrom_dart/handlers/rpc_handler_base.dart';
 import 'dart:convert';
 import 'package:maelstrom_dart/error.dart';
 
-class MaelstromNode extends HandlerBase<MessageBodyInit, MessageBody> {
+class MaelstromNode extends RPCHandlerBase<MessageBodyInit, MessageBody> {
   String _id = '';
   List<String> _nodes = [];
-  final Map<String, HandlerBase> handlers = {};
+  final Map<String, RPCHandlerBase> rpcHandlers = {};
 
   MaelstromNode() {
-    handlers['init'] = this;
+    rpcHandlers['init'] = this;
   }
 
-  void registerHandler(String messageType, HandlerBase handler) {
-    if (handlers.containsKey(messageType)) {
+  void registerHandler(String messageType, RPCHandlerBase handler) {
+    if (rpcHandlers.containsKey(messageType)) {
       throw ArgumentError.value(messageType,
           "A handler is already registered for this message type.");
     }
-    handlers[messageType] = handler;
+    rpcHandlers[messageType] = handler;
   }
 
   void send(String dest, MessageBody body) {
@@ -27,26 +27,26 @@ class MaelstromNode extends HandlerBase<MessageBodyInit, MessageBody> {
       'dest': dest,
       'body': body.toJson(),
     });
-    // stderr.writeln('sent: $fullJson');
-    stdout.writeln(fullJson);
+    stdout.nonBlocking.writeln(fullJson);
   }
 
-  MessageBody handleWrapper(RequestContext context, Map<String, dynamic> msg) {
+  Future<MessageBody> rpcHandlerWrapper(
+      RequestContext context, Map<String, dynamic> msg) async {
     Map<String, dynamic> body = msg['body'];
     String type = body['type'] ?? '';
 
-    if (!handlers.containsKey(type)) {
+    if (!rpcHandlers.containsKey(type)) {
       return MessageBodyError(
           code: MaelstromErrorCode.notSupported,
           inReplyTo: body['msg_id'],
           text: 'Node does not support RPC type: $type');
     }
 
-    var handler = handlers[type]!;
+    var handler = rpcHandlers[type]!;
 
     try {
       var request = handler.fromJson(body);
-      return handler.handle(context, request);
+      return await handler.handle(context, request);
     } on MaelstromException catch (e, s) {
       return MessageBodyError(
           code: e.code, inReplyTo: body['msg_id'], text: '$e: $s');
@@ -58,22 +58,27 @@ class MaelstromNode extends HandlerBase<MessageBodyInit, MessageBody> {
     }
   }
 
-  void run() {
-    while (true) {
-      var line = stdin.readLineSync();
-      // stderr.writeln('received: $line');
-      var requestJsonMap = jsonDecode(line!) as Map<String, dynamic>;
-      var context = RequestContext(
-          this, _id, UnmodifiableListView(_nodes), requestJsonMap['src']);
-      var response = handleWrapper(context, requestJsonMap);
-      if (!context.requestAlreadyReplied) {
-        send(requestJsonMap['src'], response);
-      }
+  void handleInput(String input) async {
+    var requestJsonMap = jsonDecode(input) as Map<String, dynamic>;
+    var context = RequestContext(
+        this, _id, UnmodifiableListView(_nodes), requestJsonMap['src']);
+    var response = await rpcHandlerWrapper(context, requestJsonMap);
+    if (!context.requestAlreadyReplied) {
+      send(requestJsonMap['src'], response);
     }
   }
 
+  void run() {
+    stdin
+        .asBroadcastStream()
+        .transform(utf8.decoder)
+        .transform(const LineSplitter())
+        .forEach(handleInput);
+  }
+
   @override
-  MessageBody handle(RequestContext context, MessageBodyInit message) {
+  Future<MessageBody> handle(
+      RequestContext context, MessageBodyInit message) async {
     _id = message.ownId;
     _nodes = message.nodeIds;
     return MessageBody(inReplyTo: message.id!, type: 'init_ok');
