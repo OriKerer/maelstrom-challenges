@@ -1,6 +1,6 @@
 import 'dart:collection';
 
-import 'package:maelstrom_dart/handlers/rpc_handler_base.dart';
+import 'package:maelstrom_dart/messages.dart';
 import 'package:maelstrom_dart/maelstrom_node.dart';
 
 class RequestContext {
