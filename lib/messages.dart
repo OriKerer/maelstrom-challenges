@@ -82,3 +82,42 @@ class MessageBodyGenerateOk extends MessageBody {
   factory MessageBodyGenerateOk.fromJson(Map<String, dynamic> json) =>
       _$MessageBodyGenerateOkFromJson(json);
 }
+
+@JsonSerializable()
+class MessageBodyBroadcast extends MessageBody {
+  int message;
+
+  MessageBodyBroadcast({
+    required this.message,
+    required super.id,
+  }) : super(type: 'broadcast');
+  @override
+  Map<String, dynamic> toJson() => _$MessageBodyBroadcastToJson(this);
+  factory MessageBodyBroadcast.fromJson(Map<String, dynamic> json) =>
+      _$MessageBodyBroadcastFromJson(json);
+}
+
+@JsonSerializable()
+class MessageBodyReadOk extends MessageBody {
+  List<int> messages;
+
+  MessageBodyReadOk(
+      {required this.messages, required super.id, required super.inReplyTo})
+      : super(type: 'read_ok');
+  @override
+  Map<String, dynamic> toJson() => _$MessageBodyReadOkToJson(this);
+  factory MessageBodyReadOk.fromJson(Map<String, dynamic> json) =>
+      _$MessageBodyReadOkFromJson(json);
+}
+
+@JsonSerializable()
+class MessageBodyTopology extends MessageBody {
+  Map<String, List<String>> topology;
+
+  MessageBodyTopology({required this.topology, required super.id})
+      : super(type: 'topology');
+  @override
+  Map<String, dynamic> toJson() => _$MessageBodyTopologyToJson(this);
+  factory MessageBodyTopology.fromJson(Map<String, dynamic> json) =>
+      _$MessageBodyTopologyFromJson(json);
+}
