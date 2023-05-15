@@ -1,19 +1,19 @@
 import 'dart:collection';
 import 'dart:io';
-import 'package:maelstrom_dart/handlers/rpc_handler_base.dart';
+import 'package:maelstrom_dart/handlers/handler_base.dart';
 import 'dart:convert';
 import 'package:maelstrom_dart/error.dart';
 
-class MaelstromNode extends RPCHandlerBase<MessageBodyInit, MessageBody> {
+class MaelstromNode extends HandlerBase<MessageBodyInit, MessageBody> {
   String _id = '';
   List<String> _nodes = [];
-  final Map<String, RPCHandlerBase> rpcHandlers = {};
+  final Map<String, HandlerBase> rpcHandlers = {};
 
   MaelstromNode() {
     rpcHandlers['init'] = this;
   }
 
-  void registerHandler(String messageType, RPCHandlerBase handler) {
+  void registerHandler(String messageType, HandlerBase handler) {
     if (rpcHandlers.containsKey(messageType)) {
       throw ArgumentError.value(messageType,
           "A handler is already registered for this message type.");

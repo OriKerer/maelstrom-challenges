@@ -1,9 +1,8 @@
 import 'dart:math';
 
-import 'rpc_handler_base.dart';
+import 'handler_base.dart';
 
-class GenerateHandler
-    extends RPCHandlerBase<MessageBody, MessageBodyGenerateOk> {
+class GenerateHandler extends HandlerBase<MessageBody, MessageBodyGenerateOk> {
   int runningId = 0;
   final Random rand = Random();
 

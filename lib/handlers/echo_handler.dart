@@ -1,6 +1,6 @@
-import 'rpc_handler_base.dart';
+import 'handler_base.dart';
 
-class EchoHandler extends RPCHandlerBase<MessageBodyEcho, MessageBodyEcho> {
+class EchoHandler extends HandlerBase<MessageBodyEcho, MessageBodyEcho> {
   @override
   Future<MessageBodyEcho> handle(
       RequestContext context, MessageBodyEcho message) async {
