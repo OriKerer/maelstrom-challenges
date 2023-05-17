@@ -5,7 +5,7 @@ class EchoHandler extends HandlerBase<MessageBodyEcho, MessageBodyEcho> {
   Future<MessageBodyEcho> handle(
       RequestContext context, MessageBodyEcho message) async {
     message.type = "echo_ok";
-    message.inReplyTo = message.id;
+    message.inReplyTo = context.generateMessageId();
     return message;
   }
 

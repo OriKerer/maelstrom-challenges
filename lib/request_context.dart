@@ -1,25 +1,31 @@
 import 'dart:collection';
 
-import 'package:maelstrom_dart/messages.dart';
+import 'package:maelstrom_dart/handlers/handler_base.dart';
 import 'package:maelstrom_dart/maelstrom_node.dart';
+
+enum SourceType {
+  client,
+  node;
+}
 
 class RequestContext {
   final MaelstromNode _node;
-  final String id;
   final String src;
-  UnmodifiableListView<String> otherNodes;
-  bool _requestAlreadyReplied = false;
+  static int _idCounter = 0;
 
-  bool get requestAlreadyReplied => _requestAlreadyReplied;
+  String get ownId => _node.id;
+  UnmodifiableListView<String> get cluster => _node.cluster;
+  UnmodifiableListView<String> get neighboringNodes => _node.topology.neighbors;
+  SourceType get sourceType =>
+      src.startsWith('n') ? SourceType.node : SourceType.client;
 
-  RequestContext(this._node, this.id, this.otherNodes, this.src);
+  RequestContext(this._node, this.src);
 
-  void send(String destination, MessageBody message) {
-    if (_requestAlreadyReplied == true) {
-      throw Exception(
-          'Message ${message.id} from $src already been replied to');
-    }
-    _requestAlreadyReplied = true;
-    _node.send(destination, message);
-  }
+  int generateMessageId() => _idCounter++;
+
+  void send(String destination, MessageBody message) =>
+      _node.send(destination, message);
+  Future<void> sendRPC(
+          MessageBody message, String dest, HandlerBase? handler) =>
+      _node.rpcManager.sendRPC(message, dest, handler);
 }

@@ -9,7 +9,9 @@ class ReadHandler extends HandlerBase<MessageBody, MessageBodyReadOk> {
   Future<MessageBodyReadOk> handle(
       RequestContext context, MessageBody message) async {
     return MessageBodyReadOk(
-        messages: _store.data, id: message.id, inReplyTo: message.id);
+        messages: _store.data,
+        id: context.generateMessageId(),
+        inReplyTo: message.id);
   }
 
   @override

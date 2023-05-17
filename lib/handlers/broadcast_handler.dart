@@ -9,8 +9,13 @@ class BroadcastHandler extends HandlerBase<MessageBodyBroadcast, MessageBody> {
   Future<MessageBody> handle(
       RequestContext context, MessageBodyBroadcast message) async {
     _store.add(message.message);
+    context.neighboringNodes.where((e) => e != context.src).forEach((e) {
+      context.sendRPC(message, e, null);
+    });
     return MessageBody(
-        type: "broadcast_ok", inReplyTo: message.id, id: message.id);
+        type: "broadcast_ok",
+        inReplyTo: message.id,
+        id: context.generateMessageId());
   }
 
   @override

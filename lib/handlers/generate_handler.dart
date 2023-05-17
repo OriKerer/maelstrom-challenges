@@ -18,9 +18,9 @@ class GenerateHandler extends HandlerBase<MessageBody, MessageBodyGenerateOk> {
   Future<MessageBodyGenerateOk> handle(
       RequestContext context, MessageBody message) async {
     return MessageBodyGenerateOk(
-        id: message.id,
+        id: context.generateMessageId(),
         inReplyTo: message.id,
-        generatedId: generateUUID(context.id));
+        generatedId: generateUUID(context.ownId));
   }
 
   @override
