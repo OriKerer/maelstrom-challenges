@@ -8,14 +8,23 @@ class BroadcastHandler extends HandlerBase<MessageBodyBroadcast, MessageBody> {
   @override
   Future<MessageBody> handle(
       RequestContext context, MessageBodyBroadcast message) async {
-    _store.add(message.message);
-    context.neighboringNodes.where((e) => e != context.src).forEach((e) {
-      context.sendRPC(message, e, null);
-    });
+    if (message.valueId == null) {
+      var uuid = context.uuid.generate();
+      _store.add(uuid, message.message);
+      message.valueId = uuid;
+      for (var node in context.neighboringNodes) {
+        context.sendRPC(message, node);
+      }
+    } else if (!_store.exists(message.valueId!)) {
+      _store.add(message.valueId!, message.message);
+      for (var node
+          in context.neighboringNodes.where((e) => e != context.src)) {
+        context.sendRPC(message, node);
+      }
+    }
     return MessageBody(
-        type: "broadcast_ok",
-        inReplyTo: message.id,
-        id: context.generateMessageId());
+      type: "broadcast_ok",
+    );
   }
 
   @override

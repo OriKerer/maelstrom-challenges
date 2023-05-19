@@ -17,11 +17,9 @@ class MessageHeader {
 @JsonSerializable()
 class MessageBody {
   String type;
-  @JsonKey(name: "msg_id")
-  int? id;
-  @JsonKey(name: "in_reply_to")
-  int? inReplyTo;
-  MessageBody({required this.type, this.id, this.inReplyTo});
+  MessageBody({
+    required this.type,
+  });
   Map<String, dynamic> toJson() => _$MessageBodyToJson(this);
   factory MessageBody.fromJson(Map<String, dynamic> json) =>
       _$MessageBodyFromJson(json);
@@ -34,8 +32,7 @@ class MessageBodyInit extends MessageBody {
   @JsonKey(name: "node_ids")
   List<String> nodeIds;
 
-  MessageBodyInit(
-      {required this.ownId, required this.nodeIds, required super.id})
+  MessageBodyInit({required this.ownId, required this.nodeIds})
       : super(type: "init");
   @override
   Map<String, dynamic> toJson() => _$MessageBodyInitToJson(this);
@@ -47,8 +44,9 @@ class MessageBodyInit extends MessageBody {
 class MessageBodyEcho extends MessageBody {
   String echo;
 
-  MessageBodyEcho({required this.echo, super.id, super.inReplyTo})
-      : super(type: 'echo');
+  MessageBodyEcho({
+    required this.echo,
+  }) : super(type: 'echo');
   @override
   Map<String, dynamic> toJson() => _$MessageBodyEchoToJson(this);
   factory MessageBodyEcho.fromJson(Map<String, dynamic> json) =>
@@ -60,9 +58,7 @@ class MessageBodyError extends MessageBody {
   MaelstromErrorCode code;
   String text;
 
-  MessageBodyError(
-      {required this.code, this.text = "", super.id, super.inReplyTo})
-      : super(type: 'error');
+  MessageBodyError({required this.code, this.text = ""}) : super(type: 'error');
   @override
   Map<String, dynamic> toJson() => _$MessageBodyErrorToJson(this);
   factory MessageBodyError.fromJson(Map<String, dynamic> json) =>
@@ -74,9 +70,9 @@ class MessageBodyGenerateOk extends MessageBody {
   @JsonKey(name: "id")
   String generatedId;
 
-  MessageBodyGenerateOk(
-      {required this.generatedId, required super.id, required super.inReplyTo})
-      : super(type: 'generate_ok');
+  MessageBodyGenerateOk({
+    required this.generatedId,
+  }) : super(type: 'generate_ok');
   @override
   Map<String, dynamic> toJson() => _$MessageBodyGenerateOkToJson(this);
   factory MessageBodyGenerateOk.fromJson(Map<String, dynamic> json) =>
@@ -86,10 +82,11 @@ class MessageBodyGenerateOk extends MessageBody {
 @JsonSerializable()
 class MessageBodyBroadcast extends MessageBody {
   int message;
+  String? valueId;
 
   MessageBodyBroadcast({
     required this.message,
-    required super.id,
+    this.valueId,
   }) : super(type: 'broadcast');
   @override
   Map<String, dynamic> toJson() => _$MessageBodyBroadcastToJson(this);
@@ -101,9 +98,7 @@ class MessageBodyBroadcast extends MessageBody {
 class MessageBodyReadOk extends MessageBody {
   List<int> messages;
 
-  MessageBodyReadOk(
-      {required this.messages, required super.id, required super.inReplyTo})
-      : super(type: 'read_ok');
+  MessageBodyReadOk({required this.messages}) : super(type: 'read_ok');
   @override
   Map<String, dynamic> toJson() => _$MessageBodyReadOkToJson(this);
   factory MessageBodyReadOk.fromJson(Map<String, dynamic> json) =>
@@ -114,8 +109,7 @@ class MessageBodyReadOk extends MessageBody {
 class MessageBodyTopology extends MessageBody {
   Map<String, List<String>> topology;
 
-  MessageBodyTopology({required this.topology, required super.id})
-      : super(type: 'topology');
+  MessageBodyTopology({required this.topology}) : super(type: 'topology');
   @override
   Map<String, dynamic> toJson() => _$MessageBodyTopologyToJson(this);
   factory MessageBodyTopology.fromJson(Map<String, dynamic> json) =>

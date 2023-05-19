@@ -1,43 +1,46 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:maelstrom_dart/handlers/handler_base.dart';
-import 'package:maelstrom_dart/maelstrom_node.dart';
 
 class RPCManager {
-  final MaelstromNode _node;
   final Map<int, PendingRPC> _pendingRequests = {};
 
-  RPCManager(this._node);
+  RPCManager();
 
   Future<void> sendRPC(
-      MessageBody message, String dest, HandlerBase? handler) async {
+    RequestContext context,
+    MessageBody message,
+    String dest, {
+    HandlerBase? handler,
+    int maxReties = 1,
+  }) async {
     var timeout = Duration(seconds: 1);
-    _pendingRequests[message.id!] = PendingRPC(handler);
+    var messageId = context.generateMessageId();
+    _pendingRequests[messageId] = PendingRPC(handler);
 
-    while (_pendingRequests.containsKey(message.id!)) {
-      var c = _pendingRequests[message.id!]!.completer = Completer();
-      _node.send(dest, message);
+    while (_pendingRequests.containsKey(messageId) && maxReties > 0) {
+      var c = _pendingRequests[messageId]!.completer = Completer();
+      context.send(dest, message, messageId: messageId);
+      var t = Timer(timeout, () {
+        if (!c.isCompleted) c.complete();
+        timeout += timeout;
+        maxReties--;
+        var newMessageId = context.generateMessageId();
+        _pendingRequests[newMessageId] = _pendingRequests.remove(messageId)!;
+        messageId = newMessageId;
+      });
 
-      var t = Timer(
-        timeout,
-        () {
-          if (!c.isCompleted) c.complete();
-        },
-      );
       await c.future;
+
       t.cancel();
-      timeout += timeout;
     }
   }
 
-  HandlerBase? getReplyHandler(int inReplyTo, String type) {
+  PendingRPC? getPendingRPC(int inReplyTo) {
     var res = _pendingRequests.remove(inReplyTo);
-    if (res == null) {
-      stderr.writeln('Got reply to a non existing request: $type($inReplyTo)');
-    }
     res?.complete();
-    return res?.handler;
+
+    return res;
   }
 }
 

@@ -6,7 +6,8 @@ class ErrorHandler extends HandlerBase<MessageBodyError, MessageBody> {
   @override
   Future<MessageBody?> handle(
       RequestContext context, MessageBodyError message) async {
-    stderr.writeln('Received error from ${context.src}: ${message.toJson()}');
+    stderr.writeln(
+        '[${DateTime.now()}] Received error from ${context.src}: ${message.toJson()}');
     return null;
   }
 
