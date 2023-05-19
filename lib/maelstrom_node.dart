@@ -8,10 +8,10 @@ import 'package:maelstrom_dart/topology.dart';
 import 'package:maelstrom_dart/uuid.dart';
 
 class MaelstromNode {
-  String _id = '';
-  List<String> _nodes = [];
+  late final String _id;
+  late final List<String> _nodes;
   final Map<String, HandlerBase> requestHandlers = {};
-  late RPCManager _rpcManager;
+  late final RPCManager _rpcManager;
   final Topology topology = Topology();
   late final UUID uuid;
 
