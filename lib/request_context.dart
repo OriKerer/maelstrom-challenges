@@ -34,7 +34,7 @@ class RequestContext {
   void send(String dest, MessageBody body, {int? inReplyTo, int? messageId}) {
     var bodyMap = body.toJson();
     bodyMap['msg_id'] = messageId ?? generateMessageId();
-    bodyMap['in_reply_to'] = inReplyTo;
+    if (inReplyTo != null) bodyMap['in_reply_to'] = inReplyTo;
     var fullJson = jsonEncode({
       'src': ownId,
       'dest': dest,
