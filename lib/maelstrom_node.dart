@@ -3,7 +3,7 @@ import 'package:maelstrom_dart/handlers/adhoc_handler.dart';
 import 'package:maelstrom_dart/handlers/handler_base.dart';
 import 'dart:convert';
 import 'package:maelstrom_dart/error.dart';
-import 'package:maelstrom_dart/rpc_manager.dart';
+import 'package:maelstrom_dart/rpc_client.dart';
 import 'package:maelstrom_dart/topology.dart';
 import 'package:maelstrom_dart/uuid.dart';
 
@@ -11,13 +11,11 @@ class MaelstromNode {
   late final String _id;
   late final List<String> _nodes;
   final Map<String, HandlerBase> requestHandlers = {};
-  late final RPCManager _rpcManager;
   final Topology topology = Topology();
   late final UUID uuid;
 
   String get id => _id;
   List<String> get cluster => _nodes;
-  RPCManager get rpcManager => _rpcManager;
 
   MaelstromNode() {
     requestHandlers['init'] =
@@ -31,13 +29,11 @@ class MaelstromNode {
     requestHandlers['topology'] =
         AdHocHandler<MessageBodyTopology, MessageBody>(
             (context, message) async {
-      topology.initialize(message.topology, context.ownId);
+      topology.initialize(message.topology, id);
       return MessageBody(
         type: 'topology_ok',
       );
     });
-
-    _rpcManager = RPCManager();
   }
 
   void registerHandler(String messageType, HandlerBase handler) {
@@ -51,7 +47,7 @@ class MaelstromNode {
   HandlerBase? _getHandler(String type, int? inReplyTo) {
     // Check if a reply to a RPC request
     if (inReplyTo != null) {
-      var handler = _rpcManager.getPendingRPCHandler(inReplyTo);
+      var handler = rpcClient.getPendingRPCHandler(inReplyTo);
       if (handler == null) {
         throw MaelstromException(
             code: MaelstromErrorCode.preconditionFailed,
@@ -84,10 +80,10 @@ class MaelstromNode {
   void _handleInput(String input) async {
     // stderr.writeln("### [${DateTime.now()}] $input");
     var requestJsonMap = jsonDecode(input) as Map<String, dynamic>;
-    var context = RequestContext(this, requestJsonMap['src']);
+    var context = RequestContext(requestJsonMap['src']);
     var response = await _requestHandlerWrapper(context, requestJsonMap);
     if (response != null) {
-      context.send(context.src, response,
+      rpcClient.send(context.src, response,
           inReplyTo: requestJsonMap['body']['msg_id']);
     }
   }
@@ -100,3 +96,5 @@ class MaelstromNode {
         .forEach(_handleInput);
   }
 }
+
+final node = MaelstromNode();
