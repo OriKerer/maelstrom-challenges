@@ -8,12 +8,11 @@ import 'package:maelstrom_dart/store.dart';
 
 void main(List<String> arguments) async {
   var store = Store();
-  var n = MaelstromNode();
-  n.registerHandler('echo', EchoHandler());
-  n.registerHandler('error', ErrorHandler());
-  n.registerHandler('generate', GenerateHandler());
-  n.registerHandler('broadcast', BroadcastHandler(store));
-  n.registerHandler('read', ReadHandler(store));
+  node.registerHandler('echo', EchoHandler());
+  node.registerHandler('error', ErrorHandler());
+  node.registerHandler('generate', GenerateHandler());
+  node.registerHandler('broadcast', BroadcastHandler(store));
+  node.registerHandler('read', ReadHandler(store));
 
-  n.run();
+  node.run();
 }
