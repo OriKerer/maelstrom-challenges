@@ -26,7 +26,7 @@ class MaelstromNode {
       _nodes = message.nodeIds;
       uuid = UUID(_id);
       return MessageBody(type: 'init_ok');
-    }, () => MessageBodyInit.fromJson);
+    });
 
     requestHandlers['topology'] =
         AdHocHandler<MessageBodyTopology, MessageBody>(
@@ -35,7 +35,7 @@ class MaelstromNode {
       return MessageBody(
         type: 'topology_ok',
       );
-    }, () => MessageBodyTopology.fromJson);
+    });
 
     _rpcManager = RPCManager();
   }
@@ -48,19 +48,16 @@ class MaelstromNode {
     requestHandlers[messageType] = handler;
   }
 
-  HandlerBase? _getHandler(Map<String, dynamic> body) {
-    String type = body['type'] ?? '';
-    int? inReplyTo = body['in_reply_to'];
-
+  HandlerBase? _getHandler(String type, int? inReplyTo) {
     // Check if a reply to a RPC request
     if (inReplyTo != null) {
-      var pendingRPC = _rpcManager.getPendingRPC(inReplyTo);
-      if (pendingRPC == null) {
+      var handler = _rpcManager.getPendingRPCHandler(inReplyTo);
+      if (handler == null) {
         throw MaelstromException(
             code: MaelstromErrorCode.preconditionFailed,
             description: 'Node does not have pending request "$inReplyTo"');
       }
-      return pendingRPC.handler;
+      return handler;
     }
     if (!requestHandlers.containsKey(type)) {
       throw MaelstromException(
@@ -75,8 +72,8 @@ class MaelstromNode {
     Map<String, dynamic> body = msg['body'];
 
     try {
-      var handler = _getHandler(body);
-      return await handler?.handle(context, handler.fromJson(body));
+      var handler = _getHandler(body['type'], body['in_reply_to']);
+      return await handler?.handle(context, fromJson(body));
     } on MaelstromException catch (e, s) {
       return MessageBodyError(code: e.code, text: '$e: $s');
     } catch (e, s) {

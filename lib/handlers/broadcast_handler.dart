@@ -13,7 +13,7 @@ class BroadcastHandler extends HandlerBase<MessageBodyBroadcast, MessageBody> {
       _store.add(uuid, message.message);
       message.valueId = uuid;
       for (var node in context.neighboringNodes) {
-        context.sendRPC(message, node);
+        context.sendRPC(message, node, maxReties: 5);
       }
     } else if (!_store.exists(message.valueId!)) {
       _store.add(message.valueId!, message.message);

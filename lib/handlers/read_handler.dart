@@ -12,8 +12,4 @@ class ReadHandler extends HandlerBase<MessageBody, MessageBodyReadOk> {
       messages: _store.data,
     );
   }
-
-  @override
-  MessageBody Function(Map<String, dynamic>) get fromJson =>
-      MessageBody.fromJson;
 }

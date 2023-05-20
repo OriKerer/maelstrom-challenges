@@ -8,8 +8,4 @@ class GenerateHandler extends HandlerBase<MessageBody, MessageBodyGenerateOk> {
       RequestContext context, MessageBody message) async {
     return MessageBodyGenerateOk(generatedId: context.uuid.generate());
   }
-
-  @override
-  MessageBody Function(Map<String, dynamic>) get fromJson =>
-      MessageBody.fromJson;
 }

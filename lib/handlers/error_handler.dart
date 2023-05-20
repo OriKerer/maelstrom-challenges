@@ -10,8 +10,4 @@ class ErrorHandler extends HandlerBase<MessageBodyError, MessageBody> {
         '[${DateTime.now()}] Received error from ${context.src}: ${message.toJson()}');
     return null;
   }
-
-  @override
-  MessageBodyError Function(Map<String, dynamic>) get fromJson =>
-      MessageBodyError.fromJson;
 }

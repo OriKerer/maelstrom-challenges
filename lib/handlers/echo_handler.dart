@@ -7,8 +7,4 @@ class EchoHandler extends HandlerBase<MessageBodyEcho, MessageBodyEcho> {
     message.type = "echo_ok";
     return message;
   }
-
-  @override
-  MessageBodyEcho Function(Map<String, dynamic>) get fromJson =>
-      MessageBodyEcho.fromJson;
 }

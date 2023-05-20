@@ -6,5 +6,4 @@ export 'package:maelstrom_dart/request_context.dart';
 abstract class HandlerBase<REQUEST extends MessageBody,
     RESPONSE extends MessageBody> {
   Future<RESPONSE?> handle(RequestContext context, REQUEST message);
-  REQUEST Function(Map<String, dynamic>) get fromJson;
 }
