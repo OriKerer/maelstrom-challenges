@@ -19,9 +19,8 @@ MessageBody fromJson(Map<String, dynamic> bodyMap) {
 @JsonSerializable()
 class MessageBody {
   String type;
-  MessageBody({
-    required this.type,
-  });
+  Map<String, int>? clock;
+  MessageBody({required this.type, this.clock});
   Map<String, dynamic> toJson() => _$MessageBodyToJson(this);
 }
 
@@ -102,4 +101,26 @@ class MessageBodyTopology extends MessageBody {
   MessageBodyTopology({required this.topology}) : super(type: 'topology');
   @override
   Map<String, dynamic> toJson() => _$MessageBodyTopologyToJson(this);
+}
+
+@JsonSerializable()
+class MessageBodyGossip extends MessageBody {
+  Map<String, List<StoreValue>> storeValues;
+  MessageBodyGossip({required super.clock, required this.storeValues})
+      : super(type: 'gossip');
+  @override
+  Map<String, dynamic> toJson() => _$MessageBodyGossipToJson(this);
+}
+
+@JsonSerializable()
+class StoreValue {
+  final int clock;
+  final int value;
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  final String originNode;
+
+  StoreValue({required this.clock, required this.value, this.originNode = ''});
+  Map<String, dynamic> toJson() => _$StoreValueToJson(this);
+  factory StoreValue.fromJson(Map<String, dynamic> json) =>
+      _$StoreValueFromJson(json);
 }

@@ -6,6 +6,7 @@ import 'package:maelstrom_dart/error.dart';
 import 'package:maelstrom_dart/rpc_client.dart';
 import 'package:maelstrom_dart/topology.dart';
 import 'package:maelstrom_dart/uuid.dart';
+import 'package:maelstrom_dart/vector_clock.dart';
 
 class MaelstromNode {
   late final String _id;
@@ -13,6 +14,7 @@ class MaelstromNode {
   final Map<String, HandlerBase> requestHandlers = {};
   final Topology topology = Topology();
   late final UUID uuid;
+  final VectorClock clock = VectorClock();
 
   String get id => _id;
   List<String> get cluster => _nodes;
