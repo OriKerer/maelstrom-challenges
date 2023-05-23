@@ -7,14 +7,16 @@ import 'package:maelstrom_dart/handlers/read_handler.dart';
 import 'package:maelstrom_dart/maelstrom_node.dart';
 import 'package:maelstrom_dart/handlers/echo_handler.dart';
 import 'package:maelstrom_dart/messages.dart';
+import 'package:maelstrom_dart/store.dart';
 
 void main(List<String> arguments) async {
-  var gossip = Gossip(Duration(milliseconds: 200), 3);
+  var broadcastStore = Store<dynamic>();
+  var gossip = Gossip(Duration(milliseconds: 200), 5, broadcastStore);
   node.registerHandler('echo', EchoHandler());
   node.registerHandler('error', ErrorHandler());
   node.registerHandler('generate', GenerateHandler());
-  node.registerHandler('broadcast', BroadcastHandler());
-  node.registerHandler('read', ReadHandler());
+  node.registerHandler('broadcast', BroadcastHandler(broadcastStore));
+  node.registerHandler('read', ReadHandler(broadcastStore));
   node.registerHandler('gossip_initiate', gossip.gossipInitiateHandler);
   node.registerHandler('gossip_back', gossip.gossipBackHandler);
   node.registerHandler('topology',

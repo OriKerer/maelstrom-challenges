@@ -28,21 +28,8 @@ class VectorClock extends VectorClockInterface {
   List<MapEntry<String, int>> get sortedBySmallestClock {
     var entries = vector.entries.where((e) => e.key != node.id).toList();
     entries.sort((a, b) => a.value - b.value);
-    // log('!@#$entries');
     return entries;
   }
-
-  // @override
-  // bool operator >(VectorClockInterface other) {
-  //   return other.vector.entries
-  //       .every((e) => vector[e.key] != null && vector[e.key]! > e.value);
-  // }
-
-  // @override
-  // bool operator <(VectorClockInterface other) {
-  //   return vector.entries.every(
-  //       (e) => other.vector[e.key] != null && other.vector[e.key]! > e.value);
-  // }
 
   @override
   Map<String, int> get vector => _vector;

@@ -12,10 +12,10 @@ class Store<T> {
   final _pendingWrites = Queue<T>();
   final VectorClock ownVClock;
 
-  Store({StoreData<T>? data, VectorClock? vclock, MaelstromNode? node})
+  Store({StoreData<T>? data, VectorClock? vclock})
       : data = data ?? {},
         ownVClock = vclock ?? VectorClock(vector: {}) {
-    node?.initNotificationList.add(() {
+    node.initNotificationList.add(() {
       for (var n in node.cluster) {
         ownVClock.vector[n] = 0;
       }
@@ -61,5 +61,3 @@ class Store<T> {
     ownVClock.updateFrom(other.ownVClock);
   }
 }
-
-final broadcastStore = Store<dynamic>(node: node);

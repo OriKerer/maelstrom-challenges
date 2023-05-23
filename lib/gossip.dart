@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:maelstrom_dart/handlers/adhoc_handler.dart';
 import 'package:maelstrom_dart/handlers/handler_base.dart';
 import 'package:maelstrom_dart/log.dart';
@@ -9,31 +11,39 @@ import 'package:maelstrom_dart/vector_clock.dart';
 class Gossip {
   final Duration interval;
   final int spreadCount;
-  final gossipBackHandler =
-      AdHocHandler<MessageBodyGossip, MessageBody>((c, m) async {
-    broadcastStore.mergeFrom(Store<dynamic>(
-        data: m.storeValues, vclock: VectorClock(vector: m.vclock!)));
-    return null;
-  });
+  final Store _store;
+  late final AdHocHandler<MessageBodyGossip, MessageBody> gossipBackHandler;
 
-  final gossipInitiateHandler =
-      AdHocHandler<MessageBody, MessageBodyGossip>((c, m) async {
-    var otherVClock = VectorClock(vector: m.vclock!);
+  late final AdHocHandler<MessageBody, MessageBodyGossip> gossipInitiateHandler;
 
-    return MessageBodyGossip(
-        vclock: broadcastStore.ownVClock.vector,
-        storeValues: broadcastStore.getNewerThanVClock(otherVClock),
-        type: 'gossip');
-  });
-  Gossip(this.interval, this.spreadCount);
+  Gossip(
+    this.interval,
+    this.spreadCount,
+    this._store,
+  ) {
+    gossipInitiateHandler = AdHocHandler((c, m) async {
+      var otherVClock = VectorClock(vector: m.vclock!);
+      return MessageBodyGossip(
+          vclock: _store.ownVClock.vector,
+          storeValues: _store.getNewerThanVClock(otherVClock),
+          type: 'gossip');
+    });
+
+    gossipBackHandler = AdHocHandler((c, m) async {
+      _store.mergeFrom(Store<dynamic>(
+          data: m.storeValues, vclock: VectorClock(vector: m.vclock!)));
+      return null;
+    });
+  }
 
   Future<void> start() async {
+    await Future.delayed(Duration(milliseconds: Random().nextInt(500)));
     while (true) {
       await Future.delayed(interval);
-      broadcastStore.writePendingValues();
+      _store.writePendingValues();
 
       // Get the nodes with the most outdated clocks
-      var vclockMin = broadcastStore.ownVClock.sortedBySmallestClock;
+      var vclockMin = _store.ownVClock.sortedBySmallestClock;
       List<Future<void>> futures = [];
       for (var i = 0; i < spreadCount; i++) {
         futures.add(_sendGossip(vclockMin, i));
@@ -45,13 +55,12 @@ class Gossip {
   Future<void> _sendGossip(
       List<MapEntry<String, int>> vclockMin, int addressNodeIndex) async {
     if (addressNodeIndex >= vclockMin.length ||
-        vclockMin[addressNodeIndex].value ==
-            broadcastStore.ownVClock.vector[node.id]) {
+        vclockMin[addressNodeIndex].value == _store.ownVClock.vector[node.id]) {
       return;
     }
 
-    var message = MessageBody(
-        vclock: broadcastStore.ownVClock.vector, type: 'gossip_initiate');
+    var message =
+        MessageBody(vclock: _store.ownVClock.vector, type: 'gossip_initiate');
     var destNode = vclockMin[addressNodeIndex].key;
     try {
       var response =
@@ -64,16 +73,15 @@ class Gossip {
   }
 
   void _handleGossipResponse(MessageBodyGossip message, String srcNode) {
-    broadcastStore.mergeFrom(Store<dynamic>(
+    _store.mergeFrom(Store<dynamic>(
         data: message.storeValues,
         vclock: VectorClock(vector: message.vclock!)));
     rpcClient.send(
         srcNode,
         MessageBodyGossip(
-            storeValues: broadcastStore
-                .getNewerThanVClock(VectorClock(vector: message.vclock!)),
+            storeValues:
+                _store.getNewerThanVClock(VectorClock(vector: message.vclock!)),
             type: 'gossip_back',
-            vclock: broadcastStore.ownVClock.vector));
-    // HAS TO DO WITH VECTOR CLOCK UPDATE IN NODE
+            vclock: _store.ownVClock.vector));
   }
 }
