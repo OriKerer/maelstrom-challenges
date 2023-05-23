@@ -1,8 +1,10 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:maelstrom_dart/handlers/adhoc_handler.dart';
 import 'package:maelstrom_dart/handlers/handler_base.dart';
 import 'dart:convert';
 import 'package:maelstrom_dart/error.dart';
+import 'package:maelstrom_dart/log.dart';
 import 'package:maelstrom_dart/rpc_client.dart';
 import 'package:maelstrom_dart/topology.dart';
 import 'package:maelstrom_dart/uuid.dart';
@@ -13,6 +15,7 @@ class MaelstromNode {
   final Map<String, HandlerBase> requestHandlers = {};
   final Topology topology = Topology();
   late final UUID uuid;
+  final List<void Function()> initNotificationList = [];
 
   String get id => _id;
   List<String> get cluster => _nodes;
@@ -23,6 +26,10 @@ class MaelstromNode {
       _id = message.ownId;
       _nodes = message.nodeIds;
       uuid = UUID(_id);
+      for (var f in initNotificationList) {
+        f();
+      }
+      log('$id finished init');
       return MessageBody(type: 'init_ok');
     });
   }

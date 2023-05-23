@@ -9,11 +9,10 @@ import 'package:maelstrom_dart/vector_clock.dart';
 class Gossip {
   final Duration interval;
   final int spreadCount;
-  final bool _gossip = true;
   final gossipBackHandler =
       AdHocHandler<MessageBodyGossip, MessageBody>((c, m) async {
-    broadcastStore.mergeFrom(m.storeValues);
-    node.vclock.updateFrom(VectorClock(vector: m.vclock!));
+    broadcastStore.mergeFrom(Store<dynamic>(
+        data: m.storeValues, vclock: VectorClock(vector: m.vclock!)));
     return null;
   });
 
@@ -22,58 +21,59 @@ class Gossip {
     var otherVClock = VectorClock(vector: m.vclock!);
 
     return MessageBodyGossip(
-        vclock: node.vclock.vector,
+        vclock: broadcastStore.ownVClock.vector,
         storeValues: broadcastStore.getNewerThanVClock(otherVClock),
         type: 'gossip');
   });
   Gossip(this.interval, this.spreadCount);
 
-  Future start() async {
-    while (_gossip) {
+  Future<void> start() async {
+    while (true) {
       await Future.delayed(interval);
+      broadcastStore.writePendingValues();
 
       // Get the nodes with the most outdated clocks
-      var vclockMin = node.vclock.sortedBySmallestClock;
-
+      var vclockMin = broadcastStore.ownVClock.sortedBySmallestClock;
+      List<Future<void>> futures = [];
       for (var i = 0; i < spreadCount; i++) {
-        _sendGossip(vclockMin, i);
+        futures.add(_sendGossip(vclockMin, i));
       }
+      await Future.wait(futures);
     }
   }
 
-  void _sendGossip(
-      List<MapEntry<String, int>> vclockMin, int addressNodeIndex) {
+  Future<void> _sendGossip(
+      List<MapEntry<String, int>> vclockMin, int addressNodeIndex) async {
     if (addressNodeIndex >= vclockMin.length ||
-        vclockMin[addressNodeIndex].value == node.vclock.vector[node.id]) {
+        vclockMin[addressNodeIndex].value ==
+            broadcastStore.ownVClock.vector[node.id]) {
       return;
     }
 
-    var message =
-        MessageBody(vclock: node.vclock.vector, type: 'gossip_initiate');
-
-    rpcClient
-        .sendRPC<MessageBodyGossip>(vclockMin[addressNodeIndex].key, message)
-        .then(
-          (message) =>
-              _handleGossipResponse(message, vclockMin[addressNodeIndex].key),
-        )
-        .onError((error, stack) {
-      log('Gossip timeout: $error: $stack');
-
-      _sendGossip(vclockMin, addressNodeIndex + spreadCount);
-    });
+    var message = MessageBody(
+        vclock: broadcastStore.ownVClock.vector, type: 'gossip_initiate');
+    var destNode = vclockMin[addressNodeIndex].key;
+    try {
+      var response =
+          await rpcClient.sendRPC<MessageBodyGossip>(destNode, message);
+      _handleGossipResponse(response, destNode);
+    } catch (e, s) {
+      log('Gossip timeout: $e: $s');
+      await _sendGossip(vclockMin, addressNodeIndex + spreadCount);
+    }
   }
 
   void _handleGossipResponse(MessageBodyGossip message, String srcNode) {
-    broadcastStore.mergeFrom(message.storeValues);
-    node.vclock.updateFrom(VectorClock(vector: message.vclock!));
+    broadcastStore.mergeFrom(Store<dynamic>(
+        data: message.storeValues,
+        vclock: VectorClock(vector: message.vclock!)));
     rpcClient.send(
         srcNode,
         MessageBodyGossip(
             storeValues: broadcastStore
                 .getNewerThanVClock(VectorClock(vector: message.vclock!)),
             type: 'gossip_back',
-            vclock: node.vclock.vector));
+            vclock: broadcastStore.ownVClock.vector));
     // HAS TO DO WITH VECTOR CLOCK UPDATE IN NODE
   }
 }

@@ -22,7 +22,7 @@ class VectorClock extends VectorClockInterface {
   }
 
   @override
-  void tick() => vector[node.id] = vector[node.id]! + 1;
+  int tick() => vector[node.id] = vector[node.id]! + 1;
 
   @override
   List<MapEntry<String, int>> get sortedBySmallestClock {

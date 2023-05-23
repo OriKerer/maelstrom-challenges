@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:maelstrom_dart/handlers/adhoc_handler.dart';
 import 'package:maelstrom_dart/handlers/handler_base.dart';
+import 'package:maelstrom_dart/log.dart';
 import 'package:maelstrom_dart/maelstrom_node.dart';
 
 class RPCClient {
