@@ -6,7 +6,6 @@ import 'package:maelstrom_dart/error.dart';
 import 'package:maelstrom_dart/rpc_client.dart';
 import 'package:maelstrom_dart/topology.dart';
 import 'package:maelstrom_dart/uuid.dart';
-import 'package:maelstrom_dart/vector_clock.dart';
 
 class MaelstromNode {
   late final String _id;
@@ -14,7 +13,6 @@ class MaelstromNode {
   final Map<String, HandlerBase> requestHandlers = {};
   final Topology topology = Topology();
   late final UUID uuid;
-  final VectorClock clock = VectorClock();
 
   String get id => _id;
   List<String> get cluster => _nodes;
@@ -26,15 +24,6 @@ class MaelstromNode {
       _nodes = message.nodeIds;
       uuid = UUID(_id);
       return MessageBody(type: 'init_ok');
-    });
-
-    requestHandlers['topology'] =
-        AdHocHandler<MessageBodyTopology, MessageBody>(
-            (context, message) async {
-      topology.initialize(message.topology, id);
-      return MessageBody(
-        type: 'topology_ok',
-      );
     });
   }
 
@@ -53,14 +42,14 @@ class MaelstromNode {
       if (handler == null) {
         throw MaelstromException(
             code: MaelstromErrorCode.preconditionFailed,
-            description: 'Node does not have pending request "$inReplyTo"');
+            desc: 'Node does not have pending request "$inReplyTo"');
       }
       return handler;
     }
     if (!requestHandlers.containsKey(type)) {
       throw MaelstromException(
           code: MaelstromErrorCode.notSupported,
-          description: 'Node does not support RPC type: $type');
+          desc: 'Node does not support RPC type: $type');
     }
     return requestHandlers[type]!;
   }
@@ -71,7 +60,11 @@ class MaelstromNode {
 
     try {
       var handler = _getHandler(body['type'], body['in_reply_to']);
-      return await handler?.handle(context, fromJson(body));
+      var requestBody = fromJson(body);
+
+      var response = await handler?.handle(context, requestBody);
+
+      return response;
     } on MaelstromException catch (e, s) {
       return MessageBodyError(code: e.code, text: '$e: $s');
     } catch (e, s) {
@@ -80,7 +73,7 @@ class MaelstromNode {
   }
 
   void _handleInput(String input) async {
-    // stderr.writeln("### [${DateTime.now()}] $input");
+    // log("<<< $input");
     var requestJsonMap = jsonDecode(input) as Map<String, dynamic>;
     var context = RequestContext(requestJsonMap['src']);
     var response = await _requestHandlerWrapper(context, requestJsonMap);

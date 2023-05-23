@@ -27,8 +27,8 @@ enum MaelstromErrorCode {
 
 class MaelstromException implements Exception {
   final MaelstromErrorCode code;
-  final String? description;
-  MaelstromException({required this.code, this.description});
+  final String? desc;
+  MaelstromException({this.code = MaelstromErrorCode.crash, this.desc});
   @override
-  String toString() => 'Code: $code, description: $description';
+  String toString() => 'Code: $code, description: $desc';
 }

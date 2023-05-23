@@ -1,5 +1,6 @@
 import 'package:json_annotation/json_annotation.dart';
 import 'package:maelstrom_dart/error.dart';
+import 'package:maelstrom_dart/store.dart';
 
 part 'messages.g.dart';
 
@@ -12,6 +13,8 @@ MessageBody fromJson(Map<String, dynamic> bodyMap) {
     'generate_ok' => _$MessageBodyGenerateOkFromJson,
     'read_ok' => _$MessageBodyReadOkFromJson,
     'topology' => _$MessageBodyTopologyFromJson,
+    'gossip' => _$MessageBodyGossipFromJson,
+    'gossip_back' => _$MessageBodyGossipFromJson,
     _ => _$MessageBodyFromJson,
   }(bodyMap);
 }
@@ -19,8 +22,9 @@ MessageBody fromJson(Map<String, dynamic> bodyMap) {
 @JsonSerializable()
 class MessageBody {
   String type;
-  Map<String, int>? clock;
-  MessageBody({required this.type, this.clock});
+  Map<String, int>? vclock;
+
+  MessageBody({required this.type, this.vclock});
   Map<String, dynamic> toJson() => _$MessageBodyToJson(this);
 }
 
@@ -105,22 +109,10 @@ class MessageBodyTopology extends MessageBody {
 
 @JsonSerializable()
 class MessageBodyGossip extends MessageBody {
-  Map<String, List<StoreValue>> storeValues;
-  MessageBodyGossip({required super.clock, required this.storeValues})
-      : super(type: 'gossip');
+  StoreData<dynamic> storeValues;
+
+  MessageBodyGossip(
+      {required this.storeValues, required super.vclock, required super.type});
   @override
   Map<String, dynamic> toJson() => _$MessageBodyGossipToJson(this);
-}
-
-@JsonSerializable()
-class StoreValue {
-  final int clock;
-  final int value;
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  final String originNode;
-
-  StoreValue({required this.clock, required this.value, this.originNode = ''});
-  Map<String, dynamic> toJson() => _$StoreValueToJson(this);
-  factory StoreValue.fromJson(Map<String, dynamic> json) =>
-      _$StoreValueFromJson(json);
 }

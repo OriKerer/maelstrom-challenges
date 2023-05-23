@@ -21,7 +21,7 @@ class RPCClient {
       'body': bodyMap,
     });
     stdout.nonBlocking.writeln(fullJson);
-    // stderr.writeln('@@@ [${DateTime.now()}] $fullJson');
+    // log('>>> $fullJson');
   }
 
   Future<RESPONSE> sendRPC<RESPONSE extends MessageBody>(
