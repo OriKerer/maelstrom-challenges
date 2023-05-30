@@ -1,11 +1,9 @@
 import 'package:maelstrom_dart/gossip.dart';
 import 'package:maelstrom_dart/handlers/add_handler.dart';
 import 'package:maelstrom_dart/handlers/adhoc_handler.dart';
-import 'package:maelstrom_dart/handlers/broadcast_handler.dart';
 import 'package:maelstrom_dart/handlers/error_handler.dart';
 import 'package:maelstrom_dart/handlers/generate_handler.dart';
 import 'package:maelstrom_dart/handlers/read_handler.dart';
-import 'package:maelstrom_dart/handlers/read_handler_challenge_3.dart';
 import 'package:maelstrom_dart/maelstrom_node.dart';
 import 'package:maelstrom_dart/handlers/echo_handler.dart';
 import 'package:maelstrom_dart/messages.dart';
@@ -13,7 +11,7 @@ import 'package:maelstrom_dart/store.dart';
 
 void main(List<String> arguments) async {
   var broadcastStore = Store<dynamic>();
-  var gossip = Gossip(Duration(milliseconds: 200), 5, broadcastStore);
+  var gossip = Gossip(Duration(milliseconds: 1000), 1, broadcastStore);
   node.registerHandler('echo', EchoHandler());
   node.registerHandler('error', ErrorHandler());
   node.registerHandler('generate', GenerateHandler());
