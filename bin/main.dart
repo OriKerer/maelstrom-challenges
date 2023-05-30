@@ -11,7 +11,8 @@ import 'package:maelstrom_dart/store.dart';
 
 void main(List<String> arguments) async {
   var broadcastStore = Store<dynamic>();
-  var gossip = Gossip(Duration(milliseconds: 1000), 1, broadcastStore);
+  var gossip = Gossip(Duration(milliseconds: 1000), 1, broadcastStore,
+      timeout: Duration(milliseconds: 100));
   node.registerHandler('echo', EchoHandler());
   node.registerHandler('error', ErrorHandler());
   node.registerHandler('generate', GenerateHandler());

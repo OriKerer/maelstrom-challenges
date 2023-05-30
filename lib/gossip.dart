@@ -12,15 +12,13 @@ class Gossip {
   final Duration interval;
   final int spreadCount;
   final Store _store;
+  final Duration timeout;
   late final AdHocHandler<MessageBodyGossip, MessageBody> gossipBackHandler;
 
   late final AdHocHandler<MessageBody, MessageBodyGossip> gossipInitiateHandler;
 
-  Gossip(
-    this.interval,
-    this.spreadCount,
-    this._store,
-  ) {
+  Gossip(this.interval, this.spreadCount, this._store,
+      {this.timeout = const Duration(seconds: 1)}) {
     gossipInitiateHandler = AdHocHandler((c, m) async {
       var otherVClock = VectorClock(vector: m.vclock!);
       return MessageBodyGossip(
@@ -37,6 +35,7 @@ class Gossip {
   }
 
   Future<void> start() async {
+    // Randomize start delays to spread load over a second
     await Future.delayed(Duration(milliseconds: Random().nextInt(500)));
     while (true) {
       await Future.delayed(interval);
@@ -63,8 +62,8 @@ class Gossip {
         MessageBody(vclock: _store.ownVClock.vector, type: 'gossip_initiate');
     var destNode = vclockMin[addressNodeIndex].key;
     try {
-      var response =
-          await rpcClient.sendRPC<MessageBodyGossip>(destNode, message);
+      var response = await rpcClient
+          .sendRPC<MessageBodyGossip>(destNode, message, timeout: timeout);
       _handleGossipResponse(response, destNode);
     } catch (e, s) {
       log('Gossip timeout: $e: $s');
@@ -73,6 +72,7 @@ class Gossip {
   }
 
   void _handleGossipResponse(MessageBodyGossip message, String srcNode) {
+    // TODO: need to refactor merge to be once per gossip cycle
     _store.mergeFrom(Store<dynamic>(
         data: message.storeValues,
         vclock: VectorClock(vector: message.vclock!)));
