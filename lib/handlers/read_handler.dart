@@ -1,19 +1,18 @@
 import 'handler_base.dart';
 import 'package:maelstrom_dart/store.dart';
 
-class ReadHandler
-    extends HandlerBase<MessageBody, MessageBodyReadOkChallenge3> {
+class ReadHandler extends HandlerBase<MessageBody, MessageBodyReadOk> {
   final Store _store;
 
   ReadHandler(this._store);
   @override
-  Future<MessageBodyReadOkChallenge3> handle(
+  Future<MessageBodyReadOk> handle(
       RequestContext context, MessageBody message) async {
-    return MessageBodyReadOkChallenge3(
-        messages: _store.data.values
+    return MessageBodyReadOk(
+        value: _store.data.values
             .map((e) => e.values)
             .expand((e) => e)
             .map((e) => e as int)
-            .toList());
+            .reduce((v, e) => v + e));
   }
 }
