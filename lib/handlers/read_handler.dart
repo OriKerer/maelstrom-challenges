@@ -8,11 +8,14 @@ class ReadHandler extends HandlerBase<MessageBody, MessageBodyReadOk> {
   @override
   Future<MessageBodyReadOk> handle(
       RequestContext context, MessageBody message) async {
+    var values = _store.data.values;
     return MessageBodyReadOk(
-        value: _store.data.values
-            .map((e) => e.values)
-            .expand((e) => e)
-            .map((e) => e as int)
-            .reduce((v, e) => v + e));
+        value: values.isEmpty
+            ? 0
+            : _store.data.values
+                .map((e) => e.values)
+                .expand((e) => e)
+                .map((e) => e as int)
+                .reduce((v, e) => v + e));
   }
 }
