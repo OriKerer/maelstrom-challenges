@@ -15,6 +15,7 @@ MessageBody fromJson(Map<String, dynamic> bodyMap) {
     'topology' => _$MessageBodyTopologyFromJson,
     'gossip' => _$MessageBodyGossipFromJson,
     'gossip_back' => _$MessageBodyGossipFromJson,
+    'add' => _$MessageBodyAddFromJson,
     _ => _$MessageBodyFromJson,
   }(bodyMap);
 }
@@ -90,12 +91,31 @@ class MessageBodyBroadcast extends MessageBody {
 }
 
 @JsonSerializable()
-class MessageBodyReadOk extends MessageBody {
+class MessageBodyReadOkChallenge3 extends MessageBody {
   List<int> messages;
 
-  MessageBodyReadOk({required this.messages}) : super(type: 'read_ok');
+  MessageBodyReadOkChallenge3({required this.messages})
+      : super(type: 'read_ok');
+  @override
+  Map<String, dynamic> toJson() => _$MessageBodyReadOkChallenge3ToJson(this);
+}
+
+@JsonSerializable()
+class MessageBodyReadOk extends MessageBody {
+  int value;
+
+  MessageBodyReadOk({required this.value}) : super(type: 'read_ok');
   @override
   Map<String, dynamic> toJson() => _$MessageBodyReadOkToJson(this);
+}
+
+@JsonSerializable()
+class MessageBodyAdd extends MessageBody {
+  int delta;
+
+  MessageBodyAdd({required this.delta}) : super(type: 'add');
+  @override
+  Map<String, dynamic> toJson() => _$MessageBodyAddToJson(this);
 }
 
 @JsonSerializable()

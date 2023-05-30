@@ -1,7 +1,6 @@
 import 'dart:collection';
 
 import 'package:maelstrom_dart/error.dart';
-import 'package:maelstrom_dart/log.dart';
 import 'package:maelstrom_dart/maelstrom_node.dart';
 import 'package:maelstrom_dart/vector_clock.dart';
 
