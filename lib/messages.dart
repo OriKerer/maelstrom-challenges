@@ -16,6 +16,12 @@ MessageBody fromJson(Map<String, dynamic> bodyMap) {
     'gossip' => _$MessageBodyGossipFromJson,
     'gossip_back' => _$MessageBodyGossipFromJson,
     'add' => _$MessageBodyAddFromJson,
+    'send' => _$MessageBodySendFromJson,
+    'send_ok' => _$MessageBodySendOkFromJson,
+    'poll' => _$MessageBodyPollFromJson,
+    'poll_ok' => _$MessageBodyPollOkFromJson,
+    'list_committed_offsets' => _$MessageBodyListCommitOffsetsOkFromJson,
+    'list_committed_offsets_ok' => _$MessageBodyListCommitOffsetsOkFromJson,
     _ => _$MessageBodyFromJson,
   }(bodyMap);
 }
@@ -135,4 +141,71 @@ class MessageBodyGossip extends MessageBody {
       {required this.storeValues, required super.vclock, required super.type});
   @override
   Map<String, dynamic> toJson() => _$MessageBodyGossipToJson(this);
+}
+
+@JsonSerializable()
+class MessageBodySend extends MessageBody {
+  int msg;
+  String key;
+
+  MessageBodySend({required this.key, required this.msg}) : super(type: 'send');
+  @override
+  Map<String, dynamic> toJson() => _$MessageBodySendToJson(this);
+}
+
+@JsonSerializable()
+class MessageBodySendOk extends MessageBody {
+  int offset;
+
+  MessageBodySendOk({required this.offset}) : super(type: 'send_ok');
+  @override
+  Map<String, dynamic> toJson() => _$MessageBodySendOkToJson(this);
+}
+
+@JsonSerializable()
+class MessageBodyPoll extends MessageBody {
+  Map<String, int> offsets;
+
+  MessageBodyPoll({required this.offsets}) : super(type: 'poll');
+  @override
+  Map<String, dynamic> toJson() => _$MessageBodyPollToJson(this);
+}
+
+@JsonSerializable()
+class MessageBodyPollOk extends MessageBody {
+  Map<String, List<int>> msgs;
+
+  MessageBodyPollOk({required this.msgs}) : super(type: 'poll_ok');
+  @override
+  Map<String, dynamic> toJson() => _$MessageBodyPollOkToJson(this);
+}
+
+@JsonSerializable()
+class MessageBodyCommitOffsets extends MessageBody {
+  Map<String, int> offsets;
+
+  MessageBodyCommitOffsets({required this.offsets})
+      : super(type: 'commit_offsets');
+  @override
+  Map<String, dynamic> toJson() => _$MessageBodyCommitOffsetsToJson(this);
+}
+
+@JsonSerializable()
+class MessageBodyListCommitOffsets extends MessageBody {
+  List<String> keys;
+
+  MessageBodyListCommitOffsets({required this.keys})
+      : super(type: 'list_committed_offsets');
+  @override
+  Map<String, dynamic> toJson() => _$MessageBodyListCommitOffsetsToJson(this);
+}
+
+@JsonSerializable()
+class MessageBodyListCommitOffsetsOk extends MessageBody {
+  Map<String, int> offsets;
+
+  MessageBodyListCommitOffsetsOk({required this.offsets})
+      : super(type: 'list_committed_offsets');
+  @override
+  Map<String, dynamic> toJson() => _$MessageBodyListCommitOffsetsOkToJson(this);
 }
